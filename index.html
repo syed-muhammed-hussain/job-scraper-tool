@@ -24,51 +24,6 @@
             margin: 0 auto;
         }
 
-        /* Login Screen Styles */
-        .login-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .login-card {
-            background: white;
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            max-width: 400px;
-            width: 100%;
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .login-header h1 {
-            font-size: 2rem;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .login-header p {
-            color: #666;
-        }
-
-        .lock-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-
-        .app-content {
-            display: none;
-        }
-
-        .app-content.unlocked {
-            display: block;
-        }
-
         .header {
             text-align: center;
             color: white;
@@ -84,25 +39,6 @@
         .header p {
             font-size: 1.1rem;
             opacity: 0.95;
-        }
-
-        .logout-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 2px solid white;
-            padding: 8px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .logout-btn:hover {
-            background: white;
-            color: #667eea;
         }
 
         .card {
@@ -126,7 +62,6 @@
         }
 
         input[type="text"],
-        input[type="password"],
         input[type="number"],
         select {
             width: 100%;
@@ -139,7 +74,6 @@
         }
 
         input[type="text"]:focus,
-        input[type="password"]:focus,
         input[type="number"]:focus,
         select:focus {
             outline: none;
@@ -363,226 +297,116 @@
             .job-badge {
                 margin-top: 10px;
             }
-
-            .logout-btn {
-                top: 10px;
-                right: 10px;
-                padding: 6px 15px;
-                font-size: 0.9rem;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- Login Screen -->
-    <div class="login-container" id="loginScreen">
-        <div class="login-card">
-            <div class="login-header">
-                <div class="lock-icon">🔒</div>
-                <h1>Access Required</h1>
-                <p>Please enter your credentials</p>
-            </div>
-            <form id="loginForm">
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Job Scraper Tool</h1>
+            <p>Find the latest job postings from top job boards</p>
+        </div>
+
+        <div class="card">
+            <form id="jobSearchForm">
                 <div class="form-group">
-                    <label for="username">Username</label>
+                    <label for="keyword">Job Title / Keyword *</label>
                     <input 
                         type="text" 
-                        id="username" 
-                        placeholder="Enter username"
-                        autocomplete="username"
+                        id="keyword" 
+                        name="keyword" 
+                        placeholder="e.g., Software Engineer, Data Analyst, UX Designer"
                         required
                     >
+                    <div class="help-text">Enter the job title or skill you're looking for</div>
                 </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="city">Location *</label>
+                        <input 
+                            type="text" 
+                            id="city" 
+                            name="city" 
+                            placeholder="e.g., New York, Remote, Worldwide"
+                            required
+                        >
+                        <div class="help-text">City name or "Remote" / "Worldwide"</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="jobType">Job Type</label>
+                        <select id="jobType" name="jobType">
+                            <option value="all">All Types</option>
+                            <option value="remote">Remote</option>
+                            <option value="onsite">On-site</option>
+                            <option value="hybrid">Hybrid</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="maxResults">Max Results</label>
+                        <input 
+                            type="number" 
+                            id="maxResults" 
+                            name="maxResults" 
+                            value="10" 
+                            min="5" 
+                            max="50"
+                        >
+                        <div class="help-text">Number of results per job board (5-50)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="apiKey">Google API Key *</label>
+                        <input 
+                            type="text" 
+                            id="apiKey" 
+                            name="apiKey" 
+                            placeholder="Your Google Custom Search API Key"
+                            required
+                        >
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label for="password">Password</label>
+                    <label for="searchEngineId">Search Engine ID *</label>
                     <input 
-                        type="password" 
-                        id="password" 
-                        placeholder="Enter password"
-                        autocomplete="current-password"
+                        type="text" 
+                        id="searchEngineId" 
+                        name="searchEngineId" 
+                        placeholder="Your Google Custom Search Engine ID"
                         required
                     >
+                    <div class="help-text">Get your API key and Search Engine ID from <a href="https://developers.google.com/custom-search/v1/overview" target="_blank" style="color: #667eea;">Google Custom Search</a></div>
                 </div>
-                <button type="submit" class="btn">🔓 Login</button>
-                <div id="loginError"></div>
+
+                <button type="submit" class="btn" id="submitBtn">
+                    🚀 Search Jobs
+                </button>
             </form>
+
+            <div id="errorMessage"></div>
         </div>
-    </div>
 
-    <!-- Main App Content (Hidden until authenticated) -->
-    <div class="app-content" id="appContent">
-        <button class="logout-btn" id="logoutBtn">🚪 Logout</button>
+        <div class="card loading" id="loadingSection">
+            <div class="spinner"></div>
+            <h3>Searching job boards...</h3>
+            <p>This may take 30-60 seconds as we search multiple job sites</p>
+        </div>
 
-        <div class="container">
-            <div class="header">
-                <h1>🔍 Job Scraper Tool</h1>
-                <p>Find the latest job postings from top job boards</p>
+        <div class="card results" id="resultsSection">
+            <div class="results-header">
+                <h2>Search Results</h2>
+                <span class="results-count" id="resultsCount">0 jobs found</span>
             </div>
-
-            <div class="card">
-                <form id="jobSearchForm">
-                    <div class="form-group">
-                        <label for="keyword">Job Title / Keyword *</label>
-                        <input 
-                            type="text" 
-                            id="keyword" 
-                            name="keyword" 
-                            placeholder="e.g., Software Engineer, Data Analyst, UX Designer"
-                            required
-                        >
-                        <div class="help-text">Enter the job title or skill you're looking for</div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="city">Location *</label>
-                            <input 
-                                type="text" 
-                                id="city" 
-                                name="city" 
-                                placeholder="e.g., New York, Remote, Worldwide"
-                                required
-                            >
-                            <div class="help-text">City name or "Remote" / "Worldwide"</div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="jobType">Job Type</label>
-                            <select id="jobType" name="jobType">
-                                <option value="all">All Types</option>
-                                <option value="remote">Remote</option>
-                                <option value="onsite">On-site</option>
-                                <option value="hybrid">Hybrid</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="maxResults">Max Results</label>
-                            <input 
-                                type="number" 
-                                id="maxResults" 
-                                name="maxResults" 
-                                value="10" 
-                                min="5" 
-                                max="50"
-                            >
-                            <div class="help-text">Number of results per job board (5-50)</div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="apiKey">Google API Key *</label>
-                            <input 
-                                type="text" 
-                                id="apiKey" 
-                                name="apiKey" 
-                                placeholder="Your Google Custom Search API Key"
-                                required
-                            >
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="searchEngineId">Search Engine ID *</label>
-                        <input 
-                            type="text" 
-                            id="searchEngineId" 
-                            name="searchEngineId" 
-                            placeholder="Your Google Custom Search Engine ID"
-                            required
-                        >
-                        <div class="help-text">Get your API key and Search Engine ID from <a href="https://developers.google.com/custom-search/v1/overview" target="_blank" style="color: #667eea;">Google Custom Search</a></div>
-                    </div>
-
-                    <button type="submit" class="btn" id="submitBtn">
-                        🚀 Search Jobs
-                    </button>
-                </form>
-
-                <div id="errorMessage"></div>
-            </div>
-
-            <div class="card loading" id="loadingSection">
-                <div class="spinner"></div>
-                <h3>Searching job boards...</h3>
-                <p>This may take 30-60 seconds as we search multiple job sites</p>
-            </div>
-
-            <div class="card results" id="resultsSection">
-                <div class="results-header">
-                    <h2>Search Results</h2>
-                    <span class="results-count" id="resultsCount">0 jobs found</span>
-                </div>
-                <div id="jobsList"></div>
-            </div>
+            <div id="jobsList"></div>
         </div>
     </div>
 
     <script>
-        // ============================================
-        // AUTHENTICATION CONFIGURATION
-        // Change these credentials to your own!
-        // ============================================
-        const AUTH_CREDENTIALS = {
-            username: 'admin',      // Change this username
-            password: 'SecurePass123!'  // Change this password
-        };
-
-        // Authentication Logic
-        const loginScreen = document.getElementById('loginScreen');
-        const appContent = document.getElementById('appContent');
-        const loginForm = document.getElementById('loginForm');
-        const loginError = document.getElementById('loginError');
-        const logoutBtn = document.getElementById('logoutBtn');
-
-        // Check if already authenticated
-        function checkAuth() {
-            const isAuthenticated = sessionStorage.getItem('jobScraper_authenticated');
-            if (isAuthenticated === 'true') {
-                showApp();
-            }
-        }
-
-        // Login handler
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            if (username === AUTH_CREDENTIALS.username && password === AUTH_CREDENTIALS.password) {
-                sessionStorage.setItem('jobScraper_authenticated', 'true');
-                loginError.innerHTML = '';
-                showApp();
-            } else {
-                loginError.innerHTML = '<div class="error" style="margin-top: 15px;">Invalid username or password</div>';
-            }
-        });
-
-        // Logout handler
-        logoutBtn.addEventListener('click', () => {
-            sessionStorage.removeItem('jobScraper_authenticated');
-            hideApp();
-        });
-
-        function showApp() {
-            loginScreen.style.display = 'none';
-            appContent.classList.add('unlocked');
-        }
-
-        function hideApp() {
-            loginScreen.style.display = 'flex';
-            appContent.classList.remove('unlocked');
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-        }
-
-        // Check authentication on page load
-        checkAuth();
-
-        // ============================================
-        // JOB SEARCH FUNCTIONALITY
-        // ============================================
         const form = document.getElementById('jobSearchForm');
         const submitBtn = document.getElementById('submitBtn');
         const loadingSection = document.getElementById('loadingSection');
@@ -739,7 +563,7 @@
             return div.innerHTML;
         }
 
-        // Store API credentials in localStorage
+        // Store API credentials in localStorage (optional)
         const apiKeyInput = document.getElementById('apiKey');
         const searchEngineIdInput = document.getElementById('searchEngineId');
 
