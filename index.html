@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Scraper Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Login Screen Styles */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #666;
+        }
+
+        .lock-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .app-content {
+            display: none;
+        }
+
+        .app-content.unlocked {
+            display: block;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .results-count {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .job-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .job-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .job-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .job-company {
+            font-size: 1rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .job-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .job-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+
+        .job-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #666;
+        }
+
+        .job-detail-item svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .job-description {
+            color: #555;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+
+        .job-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .job-link {
+            background: #667eea;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .job-link:hover {
+            background: #764ba2;
+        }
+
+        .job-posted {
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #c33;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .job-header {
+                flex-direction: column;
+            }
+
+            .job-badge {
+                margin-top: 10px;
+            }
+
+            .logout-btn {
+                top: 10px;
+                right: 10px;
+                padding: 6px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="lock-icon">🔒</div>
+                <h1>Access Required</h1>
+                <p>Please enter your credentials</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        placeholder="Enter username"
+                        autocomplete="username"
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        placeholder="Enter password"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+                <button type="submit" class="btn">🔓 Login</button>
+                <div id="loginError"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Content (Hidden until authenticated) -->
+    <div class="app-content" id="appContent">
+        <button class="logout-btn" id="logoutBtn">🚪 Logout</button>
+
+        <div class="container">
+            <div class="header">
+                <h1>🔍 Job Scraper Tool</h1>
+                <p>Find the latest job postings from top job boards</p>
+            </div>
+
+            <div class="card">
+                <form id="jobSearchForm">
+                    <div class="form-group">
+                        <label for="keyword">Job Title / Keyword *</label>
+                        <input 
+                            type="text" 
+                            id="keyword" 
+                            name="keyword" 
+                            placeholder="e.g., Software Engineer, Data Analyst, UX Designer"
+                            required
+                        >
+                        <div class="help-text">Enter the job title or skill you're looking for</div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">Location *</label>
+                            <input 
+                                type="text" 
+                                id="city" 
+                                name="city" 
+                                placeholder="e.g., New York, Remote, Worldwide"
+                                required
+                            >
+                            <div class="help-text">City name or "Remote" / "Worldwide"</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="jobType">Job Type</label>
+                            <select id="jobType" name="jobType">
+                                <option value="all">All Types</option>
+                                <option value="remote">Remote</option>
+                                <option value="onsite">On-site</option>
+                                <option value="hybrid">Hybrid</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="maxResults">Max Results</label>
+                            <input 
+                                type="number" 
+                                id="maxResults" 
+                                name="maxResults" 
+                                value="10" 
+                                min="5" 
+                                max="50"
+                            >
+                            <div class="help-text">Number of results per job board (5-50)</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="apiKey">Google API Key *</label>
+                            <input 
+                                type="text" 
+                                id="apiKey" 
+                                name="apiKey" 
+                                placeholder="Your Google Custom Search API Key"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="searchEngineId">Search Engine ID *</label>
+                        <input 
+                            type="text" 
+                            id="searchEngineId" 
+                            name="searchEngineId" 
+                            placeholder="Your Google Custom Search Engine ID"
+                            required
+                        >
+                        <div class="help-text">Get your API key and Search Engine ID from <a href="https://developers.google.com/custom-search/v1/overview" target="_blank" style="color: #667eea;">Google Custom Search</a></div>
+                    </div>
+
+                    <button type="submit" class="btn" id="submitBtn">
+                        🚀 Search Jobs
+                    </button>
+                </form>
+
+                <div id="errorMessage"></div>
+            </div>
+
+            <div class="card loading" id="loadingSection">
+                <div class="spinner"></div>
+                <h3>Searching job boards...</h3>
+                <p>This may take 30-60 seconds as we search multiple job sites</p>
+            </div>
+
+            <div class="card results" id="resultsSection">
+                <div class="results-header">
+                    <h2>Search Results</h2>
+                    <span class="results-count" id="resultsCount">0 jobs found</span>
+                </div>
+                <div id="jobsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // AUTHENTICATION CONFIGURATION
+        // Change these credentials to your own!
+        // ============================================
+        const AUTH_CREDENTIALS = {
+            username: 'admin',      // Change this username
+            password: 'SecurePass123!'  // Change this password
+        };
+
+        // Authentication Logic
+        const loginScreen = document.getElementById('loginScreen');
+        const appContent = document.getElementById('appContent');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Check if already authenticated
+        function checkAuth() {
+            const isAuthenticated = sessionStorage.getItem('jobScraper_authenticated');
+            if (isAuthenticated === 'true') {
+                showApp();
+            }
+        }
+
+        // Login handler
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === AUTH_CREDENTIALS.username && password === AUTH_CREDENTIALS.password) {
+                sessionStorage.setItem('jobScraper_authenticated', 'true');
+                loginError.innerHTML = '';
+                showApp();
+            } else {
+                loginError.innerHTML = '<div class="error" style="margin-top: 15px;">Invalid username or password</div>';
+            }
+        });
+
+        // Logout handler
+        logoutBtn.addEventListener('click', () => {
+            sessionStorage.removeItem('jobScraper_authenticated');
+            hideApp();
+        });
+
+        function showApp() {
+            loginScreen.style.display = 'none';
+            appContent.classList.add('unlocked');
+        }
+
+        function hideApp() {
+            loginScreen.style.display = 'flex';
+            appContent.classList.remove('unlocked');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // Check authentication on page load
+        checkAuth();
+
+        // ============================================
+        // JOB SEARCH FUNCTIONALITY
+        // ============================================
+        const form = document.getElementById('jobSearchForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingSection = document.getElementById('loadingSection');
+        const resultsSection = document.getElementById('resultsSection');
+        const jobsList = document.getElementById('jobsList');
+        const resultsCount = document.getElementById('resultsCount');
+        const errorMessage = document.getElementById('errorMessage');
+
+        const WEBHOOK_URL = 'https://n8n.boundlesshhr.com/webhook/job-scraper';
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Clear previous results
+            errorMessage.innerHTML = '';
+            jobsList.innerHTML = '';
+            resultsSection.classList.remove('active');
+
+            // Get form data
+            const formData = {
+                keyword: document.getElementById('keyword').value.trim(),
+                city: document.getElementById('city').value.trim(),
+                jobType: document.getElementById('jobType').value,
+                maxResults: parseInt(document.getElementById('maxResults').value),
+                apiKey: document.getElementById('apiKey').value.trim(),
+                searchEngineId: document.getElementById('searchEngineId').value.trim()
+            };
+
+            // Validate
+            if (!formData.keyword || !formData.city || !formData.apiKey || !formData.searchEngineId) {
+                showError('Please fill in all required fields');
+                return;
+            }
+
+            // Show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Searching...';
+            loadingSection.classList.add('active');
+
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Hide loading
+                loadingSection.classList.remove('active');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Search Jobs';
+
+                // Display results
+                displayResults(data);
+
+            } catch (error) {
+                console.error('Error:', error);
+                loadingSection.classList.remove('active');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Search Jobs';
+                showError('Failed to fetch jobs. Please check your API credentials and try again.');
+            }
+        });
+
+        function displayResults(data) {
+            const jobs = data.jobs || [];
+            
+            if (jobs.length === 0) {
+                showError('No jobs found. Try different keywords or location.');
+                return;
+            }
+
+            resultsCount.textContent = `${jobs.length} jobs found`;
+            resultsSection.classList.add('active');
+
+            jobs.forEach(job => {
+                const jobCard = createJobCard(job);
+                jobsList.appendChild(jobCard);
+            });
+
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function createJobCard(job) {
+            const card = document.createElement('div');
+            card.className = 'job-card';
+            
+            card.innerHTML = `
+                <div class="job-header">
+                    <div>
+                        <div class="job-title">${escapeHtml(job.job_title)}</div>
+                        <div class="job-company">${escapeHtml(job.company)}</div>
+                    </div>
+                    <span class="job-badge">${escapeHtml(job.source)}</span>
+                </div>
+                
+                <div class="job-details">
+                    <div class="job-detail-item">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                        </svg>
+                        ${escapeHtml(job.location)}
+                    </div>
+                    <div class="job-detail-item">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        ${escapeHtml(job.job_type)}
+                    </div>
+                    ${job.salary !== 'Not specified' ? `
+                        <div class="job-detail-item">
+                            <svg fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                            </svg>
+                            ${escapeHtml(job.salary)}
+                        </div>
+                    ` : ''}
+                </div>
+                
+                ${job.description ? `
+                    <div class="job-description">
+                        ${escapeHtml(job.description)}
+                    </div>
+                ` : ''}
+                
+                <div class="job-footer">
+                    <span class="job-posted">📅 ${escapeHtml(job.posted_date)}</span>
+                    <a href="${escapeHtml(job.job_url)}" target="_blank" rel="noopener noreferrer" class="job-link">
+                        View Job →
+                    </a>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function showError(message) {
+            errorMessage.innerHTML = `<div class="error">${escapeHtml(message)}</div>`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Store API credentials in localStorage
+        const apiKeyInput = document.getElementById('apiKey');
+        const searchEngineIdInput = document.getElementById('searchEngineId');
+
+        // Load saved credentials
+        const savedApiKey = localStorage.getItem('jobScraper_apiKey');
+        const savedSearchEngineId = localStorage.getItem('jobScraper_searchEngineId');
+        
+        if (savedApiKey) apiKeyInput.value = savedApiKey;
+        if (savedSearchEngineId) searchEngineIdInput.value = savedSearchEngineId;
+
+        // Save credentials when form is submitted
+        form.addEventListener('submit', () => {
+            localStorage.setItem('jobScraper_apiKey', apiKeyInput.value.trim());
+            localStorage.setItem('jobScraper_searchEngineId', searchEngineIdInput.value.trim());
+        });
+    </script>
+</body>
+</html>
